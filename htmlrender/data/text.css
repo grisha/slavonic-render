@@ -1,0 +1,247 @@
+/* The style sheet of the HTML that htmlrender writes. Every rule is
+   under .slavonic, the class of the <article> around a document.
+
+   The face is named here, not loaded: the page that uses this sheet
+   declares an @font-face named "Ponomar" beside it (a page of a site by
+   the font's address, a stand-alone file with the font inside it). A
+   page set in another face declares that one, and names it in --body in
+   a rule of its own after this sheet.
+
+   The sizes and the spaces are the PDF's, in em; examples/styles.md shows
+   them all. The PDF's are written in one place, pdfrender/proportions.go,
+   and these are the same proportions, kept by hand: a value changed here
+   is to be changed there, and a value changed there, here. No comment
+   says what a value is, so that none goes stale. */
+
+.slavonic {
+	--kinovar: #CC0803; /* cu.Kinovar; a test holds the two together */
+	/* The face of the instructions, the footnotes and their numbers: the
+	   reader's own script. The PDF sets them in Carlito; like Ponomar it is
+	   named here and not loaded, so a page that has it declares it, and any
+	   other gets Calibri, to whose widths Carlito was drawn, or else the
+	   device's sans-serif. */
+	--plain: "Carlito", "Calibri", sans-serif;
+	/* The face of the text: the PDF's BodyFont. */
+	--body: "Ponomar", serif;
+	font-family: var(--body);
+	/* Larger than the reader's default text size, times --size, the
+	   reader's choice on the page, which a script of the page sets
+	   (examples/menu.html; the fallback where nothing sets it). A ratio,
+	   so it multiplies the reader's own size and zoom, not replaces them;
+	   every other size and space here is in em, so they all follow, the
+	   column's width too. */
+	font-size: calc(1.2em * var(--size, 1));
+	line-height: 1.43; /* the PDF's leading: room for the marks above the letters */
+	max-width: 36em;
+	margin: 0 auto;
+	padding: 0 1em;
+}
+
+/* On a dark page the PDF's red is too dark to read (2.9:1 to 3.2:1 on the
+   browsers' dark backgrounds), so there it is lighter: the same hue and
+   saturation, lightened until it stands off the page at least as far as
+   the PDF's red off white paper, 5.8:1 (6.1:1 on Firefox's #1C1B22, 6.7:1
+   on Chrome's #121212). light-dark() takes the one the page's colour
+   scheme calls for: a page that declares none is light and keeps the
+   PDF's red (RenderPage's page is dark on a screen when the device is set
+   to dark). Under @supports because in a custom property the function
+   fails not here but where the colour is used, and a browser without it
+   (before 2024) would make every red the colour of the text; such a
+   browser keeps the PDF's red. */
+@supports (color: light-dark(red, red)) {
+	.slavonic {
+		--kinovar: light-dark(#CC0803, #FD6C68);
+	}
+}
+
+/* Justified, as in the PDF, though a browser only stretches the spaces of
+   each line as it fills it, and nothing is hyphenated yet. A centered
+   line stays centered: its rule is the more specific one. */
+.slavonic p {
+	margin: 0;
+	text-align: justify;
+}
+
+/* A centered line stands apart from the text. */
+.slavonic .centered {
+	text-align: center;
+	margin: 0.43em 0;
+}
+
+/* Every line of an indented paragraph is indented. */
+.slavonic .indented {
+	padding-left: 1em;
+}
+
+.slavonic .minor {
+	font-size: 0.85em;
+}
+
+/* Ponomar has one weight: without font-weight a browser makes a bold of
+   its own by smearing the letters. */
+.slavonic h1,
+.slavonic h2 {
+	color: var(--kinovar);
+	font-weight: normal;
+	text-align: center;
+	margin: 0.7em 0 0.4em;
+}
+
+.slavonic h1 {
+	font-size: 1.5em;
+}
+
+.slavonic h2 {
+	font-size: 1.2em;
+}
+
+/* The blank line (*** in the markup): a space, and no rule. */
+.slavonic hr {
+	border: 0;
+	height: 0.86em;
+	margin: 0;
+}
+
+/* Where the PDF begins a new page (=== in the markup): a wider space on a
+   screen, a new page when the page is printed. */
+.slavonic hr.page {
+	height: 2.86em;
+	break-after: page;
+}
+
+.slavonic .rubric {
+	color: var(--kinovar);
+	font-size: 0.85em;
+}
+
+/* In a minor paragraph the rubric is the size of the text around it. */
+.slavonic .minor .rubric {
+	font-size: 1em;
+}
+
+/* The red initial: a rubric that keeps the body size. */
+.slavonic .incipit {
+	color: var(--kinovar);
+}
+
+/* The instructions, in the reader's own script. */
+.slavonic .plain {
+	font-family: var(--plain);
+	color: var(--kinovar);
+	font-size: 0.78em;
+}
+
+/* The inline indent: a space before the text. */
+.slavonic .indent {
+	display: inline-block;
+	width: 1em;
+}
+
+/* The drop cap, as deep as the PDF's by default, in the text's own face
+   for now (the PDF uses Indiction). */
+.slavonic .dropcap::first-letter {
+	color: var(--kinovar);
+	float: left;
+	font-size: 2.9em;
+	line-height: 1;
+	padding-right: 0.07em;
+}
+
+/* A margin note of the PDF (a verse number, a label of the stichera). A
+   page of HTML has no margin: the note stands in the text, before the word
+   it marks. Red, and sized against the body, in a minor paragraph too:
+   smaller than the PDF's, since here it stands in the line and not beside
+   it. */
+.slavonic .note {
+	color: var(--kinovar);
+	font-size: 0.65em;
+}
+
+.slavonic .minor .note {
+	font-size: 0.76em;
+}
+
+/* The note before a drop cap is floated: out of the first line, so that
+   the drop cap is the first letter of the text and not of the note. */
+.slavonic .dropcap .note.lead {
+	float: left;
+}
+
+/* A footnote reference, the only <sup> there is: a bold red number in the
+   reader's own script, sized and raised as in the PDF (the rise is given
+   in its own size). With no line height of its own it
+   does not push its line away from the one above. */
+.slavonic sup {
+	font-family: var(--plain);
+	font-weight: bold;
+	color: var(--kinovar);
+	font-size: 0.65em;
+	line-height: 0;
+	vertical-align: 0.62em;
+}
+
+/* In a minor paragraph too it is sized against the body, not against the
+   smaller text around it. */
+.slavonic .minor sup {
+	font-size: 0.76em;
+}
+
+/* The footnotes: at the end of the document, a page of HTML having no
+   foot. As in the PDF: red, italic, in the reader's own script, smaller
+   than the body (the leading follows, being a ratio), under a short rule,
+   each opening with its number in bold. */
+.slavonic .footnotes {
+	font-family: var(--plain);
+	font-style: italic;
+	font-size: 0.7em;
+	color: var(--kinovar);
+	margin-top: 1.43em;
+}
+
+/* The rule is the colour of the text, as in the PDF: CanvasText, black on
+   a light page and light on a dark one. */
+.slavonic .footnotes::before {
+	content: "";
+	display: block;
+	width: 33%;
+	border-top: 1px solid CanvasText;
+	margin-bottom: 0.43em;
+}
+
+.slavonic .footnotes p > a:first-child {
+	font-weight: bold;
+}
+
+/* Slavonic in a footnote is in the text's face, upright (it has no italic, and
+   a browser would slant the letters itself), and of the note's size; so
+   is an instruction, which is the note's own face already. */
+.slavonic .footnotes .rubric {
+	font-family: var(--body);
+	font-style: normal;
+	font-size: 1em;
+}
+
+.slavonic .footnotes .plain {
+	font-size: 1em;
+}
+
+/* An ornament: an <svg> on a line of its own, centred. Its width is the
+   PDF's at the default body size, here in em, so it grows with the text,
+   and never wider than the column; its height follows from its viewBox.
+   The source's width and height attributes give way to these. Above it, a
+   small space, as in the PDF. Its shapes are filled with currentColor, so
+   the colour is set here. */
+.slavonic .ornament {
+	display: block;
+	width: 14.2em;
+	max-width: 100%;
+	height: auto;
+	margin: 0.21em auto 0;
+	color: var(--kinovar);
+}
+
+/* A link (the contents) looks like the text it is. */
+.slavonic a {
+	color: inherit;
+	text-decoration: none;
+}

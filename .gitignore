@@ -1,0 +1,14 @@
+# Editor backups and autosaves
+*~
+*.swp
+\#*#
+.DS_Store
+
+# Scratch and output
+/vendor/
+/output/
+/tmp/
+
+# Bukvica: "free for non-commercial use", no license to redistribute; it is
+# embedded only where a copy has been put here by hand (fonts/data/README.md)
+fonts/data/Bukvica.ttf

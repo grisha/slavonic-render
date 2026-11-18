@@ -1,0 +1,201 @@
+<!-- A menu for the page htmlrender writes: a button in the top right corner
+     that opens three rows, smaller text, larger text and dark mode, and
+     remembers what the reader chose. It is an example of what the page's
+     head can carry:
+
+         slavonic-render html -head examples/menu.html in.md out.html
+
+     The page gives a script two things to set, both on the root element:
+     the custom property --size, a factor of the text's size, and the
+     attribute data-theme, "light" or "dark", over the device's setting. -->
+<style>
+@media screen {
+	/* The menu's button, in the top right corner, the text scrolling
+	   under it: a circle 2.5em across (40 px at a browser's default
+	   size), a target for a finger. A button has a smaller font of its
+	   own; it takes the page's, so that its em is the page's, and not the
+	   text's, which the text size makes larger. */
+	.menu {
+		position: fixed;
+		top: 0.5em;
+		right: 0.5em;
+		box-sizing: border-box;
+		width: 2.5em;
+		height: 2.5em;
+		padding: 0.55em;
+		font: inherit;
+		color: CanvasText;
+		background: Canvas;
+		border: 1px solid GrayText;
+		border-radius: 50%;
+		cursor: pointer;
+	}
+	.menu svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	/* The menu, under its button: a row for each of the reader's
+	   controls, in the device's interface face at its own size, so that
+	   it stays as it is when the text grows. No display here: that would
+	   undo its hidden attribute, by which the script opens and closes
+	   it. */
+	.controls {
+		position: fixed;
+		top: 3.5em;
+		right: 0.5em;
+		padding: 0.3em 0;
+		font: 1rem/1.4 system-ui, sans-serif;
+		color: CanvasText;
+		background: Canvas;
+		border: 1px solid GrayText;
+		border-radius: 0.5em;
+	}
+	/* A row: its icon, then its word, 2.75em high, a target for a
+	   finger. A row that another script adds takes these rules too. */
+	.controls button {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+		box-sizing: border-box;
+		width: 100%;
+		min-height: 2.75em;
+		padding: 0 1em;
+		font: inherit;
+		color: inherit;
+		background: none;
+		border: 0;
+		text-align: start;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+	.controls svg {
+		flex: none;
+		width: 1.4em;
+		height: 1.4em;
+	}
+	/* At either end of the sizes a row does nothing, and looks it. */
+	.controls button:disabled {
+		color: GrayText;
+		cursor: default;
+	}
+	/* The theme's row has a ✓ at its end when the page is dark. Its room
+	   is kept when it is not there, so the menu does not change width. */
+	.controls [aria-pressed]::after {
+		content: "✓";
+		margin-inline-start: auto;
+		padding-inline-start: 1em;
+		visibility: hidden;
+	}
+	.controls [aria-pressed="true"]::after {
+		visibility: visible;
+	}
+}
+@media print {
+	.menu, .controls {
+		display: none;
+	}
+}
+</style>
+<script>
+{
+	const root = document.documentElement;
+	const steps = [0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2];
+	let i = steps.indexOf(1);
+
+	// What the reader chose before is set here, in the head, before the
+	// document is read: a page remembered as dark is never shown light
+	// first, nor one remembered larger shown at the default size. The
+	// choices are remembered where the browser lets a page remember: on a
+	// site, one choice for all its pages; for a file on a disk, by file or
+	// not at all.
+	try {
+		const theme = localStorage.getItem("theme");
+		if (theme === "light" || theme === "dark") {
+			root.dataset.theme = theme;
+		}
+		const size = steps.indexOf(Number(localStorage.getItem("size")));
+		if (size >= 0) {
+			i = size;
+		}
+	} catch {}
+	root.style.setProperty("--size", steps[i]);
+
+	// The menu itself is made when the document has been read; there is
+	// no body to put it in before. A browser without scripts shows no
+	// button that does nothing. The text size's icons are a small A and a
+	// large one; the theme's, a circle half filled, is the same in both
+	// states, and aria-pressed says which (and the ✓).
+	addEventListener("DOMContentLoaded", () => {
+		document.body.insertAdjacentHTML("afterbegin", `
+<button type="button" class="menu" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<div class="controls" hidden>
+<button type="button" class="smaller"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 19 12 8l5 11M8.8 15h6.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Smaller text</span></button>
+<button type="button" class="larger"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21 12 3l8 18M7.1 14h9.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Larger text</span></button>
+<button type="button" class="theme"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"/></svg><span>Dark mode</span></button>
+</div>
+`);
+		const menu = document.querySelector(".menu");
+		const controls = document.querySelector(".controls");
+		const smaller = document.querySelector(".smaller");
+		const larger = document.querySelector(".larger");
+		const theme = document.querySelector(".theme");
+
+		// The menu opens and closes with its button. A touch anywhere
+		// else closes it (a tap on the text, or the start of a scroll),
+		// and so does Escape. A press in it leaves it open: A can be
+		// pressed again while the text grows.
+		const open = (yes) => {
+			controls.hidden = !yes;
+			menu.setAttribute("aria-expanded", yes);
+		};
+		menu.onclick = () => open(controls.hidden);
+		addEventListener("pointerdown", (event) => {
+			if (!menu.contains(event.target) && !controls.contains(event.target)) {
+				open(false);
+			}
+		});
+		addEventListener("keydown", (event) => {
+			if (event.key === "Escape") {
+				open(false);
+			}
+		});
+
+		// Until the theme's row is pressed, the page follows the device.
+		const dark = () => root.dataset.theme
+			? root.dataset.theme === "dark"
+			: matchMedia("(prefers-color-scheme: dark)").matches;
+		theme.setAttribute("aria-pressed", dark());
+		theme.onclick = () => {
+			root.dataset.theme = dark() ? "light" : "dark";
+			theme.setAttribute("aria-pressed", dark());
+			try {
+				localStorage.setItem("theme", root.dataset.theme);
+			} catch {}
+		};
+
+		// The text size: a factor of the style sheet's own, which it
+		// multiplies by --size, in the steps of a browser's zoom. A
+		// change of size moves every line, so the page keeps the reader's
+		// place as a fraction of its height: the text grows all through
+		// alike. At either end of the sizes a row does nothing.
+		const show = () => {
+			root.style.setProperty("--size", steps[i]);
+			smaller.disabled = i === 0;
+			larger.disabled = i === steps.length - 1;
+		};
+		const step = (by) => {
+			const place = scrollY / root.scrollHeight;
+			i += by;
+			show();
+			scrollTo(0, place * root.scrollHeight);
+			try {
+				localStorage.setItem("size", steps[i]);
+			} catch {}
+		};
+		smaller.onclick = () => step(-1);
+		larger.onclick = () => step(1);
+		show();
+	});
+}
+</script>

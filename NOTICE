@@ -1,0 +1,41 @@
+slavonic-render
+Copyright 2026 Gregory Trubetskoy
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository carries, and the binaries built from it embed, works of
+others under their own terms:
+
+- The fonts of fonts/data/: Ponomar, Indiction, Vertograd, Triodion,
+  Cathisma, Oglavie, Pomorsky, Fedorovsk, Menaion and Monomakh, of the
+  Ponomar Project (https://github.com/slavonic/), and Carlito
+  (https://github.com/googlefonts/carlito, Reserved Font Name "Carlito"),
+  each under the SIL Open Font License 1.1. Each font's copyright notice
+  and the license are in fonts/data/OFL.txt.
+
+- The Church Slavonic hyphenation patterns, cu/hyph-cu.txt: the pattern
+  body of cu-tex's hyphenation/hyph-cu.tex (https://github.com/slavonic/cu-tex),
+  Copyright (c) 2016 Aleksandr Andreev and Mike Kroutikov, under the MIT
+  License, in cu/hyph-cu.LICENSE.txt. The kinovar red, #CC0803
+  (cu/colors.go), is cu-tex's \cuKinovarColor.
+
+- The ornaments of internal/assets/: from FreeSVG.org (https://freesvg.org)
+  and PublicDomainVectors.org (https://publicdomainvectors.org), public
+  domain, each chosen because its page there marked it so
+  (internal/assets/svg/README.md).
+
+The examples of examples/ and the README quote:
+
+- Church Slavonic texts from cu-md-sandbox
+  (https://github.com/slavonic/cu-md-sandbox), Copyright (c) 2018 Slavonic
+  Computing Initiative, under the MIT License, in examples/cu/LICENSE.txt.
+  The psalms of examples/cu/ are from its AugmentedPsalter1978. The
+  samples of examples/styles.md and of the README are from the same book
+  and from its Oktoih1981, Sluzhebnik1906, Chasoslov1991 and
+  MineyaOctober1997. examples/psalm22.md adds the inscription of its psalm
+  from the psalter, and examples/psalm22.png is that psalm's opening as
+  this program sets it.
+
+- English psalms from Sir Lancelot C. L. Brenton's translation of the
+  Septuagint (1851), public domain, in the spelling of eBible.org's Updated
+  Brenton English Septuagint (Adam Boyd, 2020, CC0).
